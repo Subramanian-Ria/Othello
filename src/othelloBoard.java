@@ -291,7 +291,12 @@ public class othelloBoard {
     }
     public void generatePossibilities(int xPos, int yPos, int xDiffPos, int xDiffNeg, int yDiffPos, int yDiffNeg, playerColor turnTemp)
     {
-        location loc[] = new location[8];
+        location[] loc = new location[8];
+        for(int i = 0; i < 8; i++)
+        {
+            loc[i] = new location();
+            loc[i].x = -2;
+        }
         System.out.print("(" + xPos + ", " + yPos + "): ");
         int yDir = 0;
         int xDir = 0;
@@ -311,12 +316,12 @@ public class othelloBoard {
             }
             for (int j = (xPos + xDiffNeg); j < (xPos + xDiffPos + 1); j++) {
                 if ((j != xPos) || (i != yPos)) {
-                    //System.out.print(j + ", " + i + " | ");
+                    System.out.print(j + ", " + i + " | ");
                     if(j == xPos - 1)
                     {
                         xDir = -1;
                     }
-                    else if(i == yPos + 1)
+                    else if(j == xPos + 1)
                     {
                         xDir = 1;
                     }
@@ -333,15 +338,23 @@ public class othelloBoard {
 
             }
         }
+        System.out.println();
+        System.out.println();
         System.out.println("(" + xPos + ", " + yPos + "): ");
         for(int i = 0; i < loc.length; i++)
         {
-            System.out.print(loc[count].x + ", " + loc[count].y +" ");
-            System.out.print("dir X: " + loc[count].dirX + ", " + "dir y: " + loc[count].dirY);
-            System.out.println();
-            //TODO: PRINT LOC ARRAY
+            if(loc[i].x > -2)
+            {
+                System.out.print(loc[i].x + ", " + loc[i].y +" ");
+                System.out.print("dir X: " + loc[i].dirX + ", " + "dir y: " + loc[i].dirY);
+                System.out.println();
+            }
         }
         System.out.println();
+    }
+    private boolean checkLoc(location loc)
+    {
+        return false;
     }
     private void addPoints(int points)
     {
