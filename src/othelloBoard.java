@@ -5,35 +5,45 @@ import java.util.ArrayList;
 import java.util.Scanner;
 public class othelloBoard {
 
+    //The actual othello/reversi board
     private boardSpace board[][] = new boardSpace[8][8];
     private int pointsTotalBlack = 0;
     private int pointsTotalWhite = 0;
+
     public playerColor turn = playerColor.BLACK;
-    private takenPieces takenBlack = new takenPieces();
-    private int count = 0;
+    //
+    //private takenPieces takenBlack = new takenPieces();
+    //private int count = 0;
+    //an enum containing the possible states of a square on the board
+    //the board is an array of boardspaces
     public enum boardSpace
     {
         EMPTY,
         BLACK,
         WHITE
     }
+    //enum for the two players
     public enum playerColor
     {
         BLACK,
         WHITE
     }
+    //temp input until GUI is implemented
     Scanner sc = new Scanner(System.in);
 
     public boolean won()
     {
+        //TODO: CREATE FUNCTION TO CHECK IF THE BOARD IS IN A WON STATE
         return false;
     }
+    //calls the functions to set up the board for play
     public void build()
     {
         populate();
         testPrint();
-        setTakenBlack();
+        //setTakenBlack();
     }
+    //makes a change to the board based on an x and y input and the current turn
     public int move(int xPos, int yPos)
     {
         if(!checkMove(xPos, yPos))
@@ -51,6 +61,7 @@ public class othelloBoard {
         }
         return 0;
     }
+    //checks if moves are out of bounds or on a not empty square
     private boolean checkMove(int xPos, int yPos)
     {
         if(((0 > xPos) || (xPos > 7)) && ((0 > yPos) || (yPos > 7)))
@@ -91,7 +102,7 @@ public class othelloBoard {
         System.out.println("Invalid Move Location");
         return false;
     }
-
+    //populates the board with empty squares except for the 4 starting pieces in the center
     private void populate()
     {
         for(int i = 0; i < 8; i++)
@@ -106,6 +117,7 @@ public class othelloBoard {
         board[3][4] = boardSpace.WHITE;
         board[4][4] = boardSpace.BLACK;
     }
+    //a temp print function that is used to test until the GUI is implemented
     public void testPrint()
     {
         for(int i = 0; i < 8; i++)
@@ -128,7 +140,9 @@ public class othelloBoard {
             System.out.println();
         }
     }
-    private void setTakenBlack()
+
+    //not in use
+    /*private void setTakenBlack()
     {
         takenBlack.color = playerColor.BLACK;
         for(int i = 0; i < 8; i++)
@@ -136,7 +150,9 @@ public class othelloBoard {
             ArrayList<Point> tempList = new ArrayList<>();
             takenBlack.takenPieces[i] = tempList;
         }
-    }
+    }*/
+
+    //not in use
     private boolean checkBlack(int xPos, int yPos)
     {
         /*location[] loc = new location[8];
@@ -219,9 +235,11 @@ public class othelloBoard {
         //TODO: CHECK IF BETTER TO CREATE A FUNCTION TO GENERATE ALL POSSIBLE MOVES??
         return false;*/
     }
+
+    //not in use
     private location[] possibleMoveChart(int xPos, int yPos, int xDiffPos, int xDiffNeg, int yDiffPos, int yDiffNeg)
     {
-        count = 0;
+        int count = 0;
         location[] loc = new location[8];
         for(int i = (yPos - Math.abs(yDiffNeg)); i < (yPos + Math.abs(yDiffPos)); i++)
         {
@@ -243,11 +261,15 @@ public class othelloBoard {
         }
         return loc;
     }
+
+    //not in use
     private boolean checkWhite(int xPos, int yPos)
     {
 
         return false;
     }
+
+    //generates all moves and potential taken pieces such that they are not out of bounds
     public boolean findValidMoves()
     {
         for(int i = 0; i < 8; i++)
@@ -289,6 +311,8 @@ public class othelloBoard {
         }
         return false;
     }
+
+    //takes a point and generates all possible taken pieces such that they do not go out of bounds
     public void generatePossibilities(int xPos, int yPos, int xDiffPos, int xDiffNeg, int yDiffPos, int yDiffNeg, playerColor turnTemp)
     {
         location[] loc = new location[8];
@@ -352,14 +376,19 @@ public class othelloBoard {
         }
         System.out.println();
     }
+
     private boolean checkLoc(location loc)
     {
+
+        //TODO: CHECKS TO SEE IF THE POTENTIAL TAKEN PIECE CHAINS COMPLY WITH GAME RULES
         return false;
     }
+
     private void addPoints(int points)
     {
         pointsTotalBlack += points;
     }
+
     public int getPoints(playerColor p)
     {
         if(p == playerColor.BLACK)
@@ -371,4 +400,12 @@ public class othelloBoard {
             return pointsTotalWhite;
         }
     }
+}
+
+//object used to create a record of potential taken pieces when checking for move validity
+class location {
+    int x;
+    int y;
+    int dirX;
+    int dirY;
 }
