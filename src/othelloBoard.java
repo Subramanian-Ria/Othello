@@ -1,108 +1,91 @@
-//import org.jetbrains.annotations.Contract;
 import java.awt.*;
-
 import java.util.ArrayList;
-import java.util.Scanner;
-public class othelloBoard {
+
+public class othelloBoard
+{
 
     //The actual othello/reversi board
     private boardSpace board[][] = new boardSpace[8][8];
-    private int pointsTotalBlack = 0;
-    private int pointsTotalWhite = 0;
 
-    public playerColor turn = playerColor.BLACK;
-    //
-    //private takenPieces takenBlack = new takenPieces();
-    //private int count = 0;
+    //array of objects that store all potential moves that can be made in any given turn for each player
+    potentialMove[][] OMoves = new potentialMove[8][8];
+    potentialMove[][] XMoves = new potentialMove[8][8];
+
+    public boolean oneOneX = false;
+    public boolean oneOneO = false;
+
+    //current turn
+    public playerColor turn = playerColor.O;
+
     //an enum containing the possible states of a square on the board
-    //the board is an array of boardspaces
+    //the board is an array of boardSpaces
     public enum boardSpace
     {
         EMPTY,
-        BLACK,
-        WHITE
+        O,
+        X
     }
-    //enum for the two players
+
+    //enum for the two player colors
     public enum playerColor
     {
-        BLACK,
-        WHITE
+        O,
+        X
     }
-    //temp input until GUI is implemented
-    Scanner sc = new Scanner(System.in);
 
+    //checks if the board is in a won state
     public boolean won()
     {
-        //TODO: CREATE FUNCTION TO CHECK IF THE BOARD IS IN A WON STATE
-        return false;
+        initPotMoves();
+        if(oneOneO)
+        {
+            board[0][0] = boardSpace.O;
+        }
+        else if(oneOneX)
+        {
+            board[0][0] = boardSpace.X;
+        }
+        else
+        {
+            board[0][0] = boardSpace.EMPTY;
+        }
+        findValidMoves(playerColor.O);
+        findValidMoves(playerColor.X);
+        boolean availableMoves = false;
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = 0; j < 8; j++)
+            {
+                if(OMoves[j][i].valid)
+                {
+                    availableMoves = true;
+                }
+                else if(XMoves[j][i].valid)
+                {
+                    availableMoves = true;
+                }
+            }
+        }
+        if(availableMoves)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
+
     //calls the functions to set up the board for play
     public void build()
     {
         populate();
-        testPrint();
-        //setTakenBlack();
+        initPotMoves();
+        turn = playerColor.X;
+        findValidMoves(turn);
     }
-    //makes a change to the board based on an x and y input and the current turn
-    public int move(int xPos, int yPos)
-    {
-        if(!checkMove(xPos, yPos))
-        {
-            return -1;
-        }
-        switch (turn)
-        {
-            case BLACK:
-                board[xPos][yPos] = boardSpace.BLACK;
-                break;
-            case WHITE:
-                board[xPos][yPos] = boardSpace.WHITE;
-                break;
-        }
-        return 0;
-    }
-    //checks if moves are out of bounds or on a not empty square
-    private boolean checkMove(int xPos, int yPos)
-    {
-        if(((0 > xPos) || (xPos > 7)) && ((0 > yPos) || (yPos > 7)))
-        {
-            System.out.println("X & Y Out of Bounds");
-            return false;
-        }
 
-        else if((0 > xPos) || (xPos > 7))
-        {
-            System.out.println("X Out of Bounds");
-            return false;
-        }
-        else if((0 > yPos) || (yPos > 7))
-        {
-            System.out.println("Y Out of Bounds");
-            return false;
-        }
-        if(board[xPos][yPos] != boardSpace.EMPTY)
-        {
-            System.out.println("That space is not empty");
-            return false;
-        }
-        boolean valid = false;
-        switch (turn)
-        {
-            case BLACK:
-                valid = checkBlack(xPos, yPos);
-                break;
-            case WHITE:
-                valid = checkWhite(xPos, yPos);
-                break;
-        }
-        if(valid)
-        {
-            return true;
-        }
-        System.out.println("Invalid Move Location");
-        return false;
-    }
-    //populates the board with empty squares except for the 4 starting pieces in the center
+    //initializes the pieces on the board
     private void populate()
     {
         for(int i = 0; i < 8; i++)
@@ -112,300 +95,316 @@ public class othelloBoard {
                 board[j][i] = boardSpace.EMPTY;
             }
         }
-        board[3][3] = boardSpace.BLACK;
-        board[4][3] = boardSpace.WHITE;
-        board[3][4] = boardSpace.WHITE;
-        board[4][4] = boardSpace.BLACK;
+        board[3][3] = boardSpace.O;
+        board[4][3] = boardSpace.X;
+        board[3][4] = boardSpace.X;
+        board[4][4] = boardSpace.O;
     }
-    //a temp print function that is used to test until the GUI is implemented
-    public void testPrint()
+
+    //initializes each potentialMove object inside the 2d array that stores them
+    public void initPotMoves()
     {
         for(int i = 0; i < 8; i++)
         {
             for(int j = 0; j < 8; j++)
             {
-                switch (board[j][i])
+                OMoves[j][i] = new potentialMove();
+                XMoves[j][i] = new potentialMove();
+                for(int k = 0; k < 8; k++)
                 {
-                    case EMPTY:
-                        System.out.print("| ");
-                        break;
-                    case BLACK:
-                        System.out.print("B ");
-                        break;
-                    case WHITE:
-                        System.out.print("W ");
-                        break;
-                }
-            }
-            System.out.println();
-        }
-    }
-
-    //not in use
-    /*private void setTakenBlack()
-    {
-        takenBlack.color = playerColor.BLACK;
-        for(int i = 0; i < 8; i++)
-        {
-            ArrayList<Point> tempList = new ArrayList<>();
-            takenBlack.takenPieces[i] = tempList;
-        }
-    }*/
-
-    //not in use
-    private boolean checkBlack(int xPos, int yPos)
-    {
-        /*location[] loc = new location[8];
-        count = 0;
-        int points = 0;
-        for(int i = 0; i < 8; i++)
-        {
-            takenBlack.takenPieces[i].clear();
-        }
-        int xDiffPos = 0;
-        int xDiffNeg = 0;
-        int yDiffPos = 0;
-        int yDiffNeg = 0;
-        if(yPos == 0)
-        {
-            yDiffPos = 1;
-        }
-        else if(yPos == 7)
-        {
-            yDiffNeg = 1;
-        }
-        else
-        {
-            yDiffPos = 1;
-            yDiffNeg = 1;
-        }
-        if(xPos == 0)
-        {
-            xDiffPos = 1;
-        }
-        else if(xPos == 7)
-        {
-            xDiffNeg = 1;
-        }
-        else
-        {
-            xDiffPos = 1;
-            xDiffNeg = 1;
-        }
-        loc = possibleMoveChart(xPos, yPos, xDiffPos, xDiffNeg, yDiffPos, yDiffNeg);
-        //count = loc.length;
-        for(int i = 0; i < count; i++)
-        {
-            int x = loc[i].x;
-            int y = loc[i].y;
-            int valid = 0;
-            Point p = new Point();
-            p.x = x;
-            p.y = y;
-            takenBlack.takenPieces[i].add(p);
-            while(valid == 0)
-            {
-                x += loc[i].dirX;
-                y += loc[i].dirY;
-                p.x = x;
-                p.y = y;
-                switch (board[x][y])
-                {
-                    case WHITE:
-                        points++;
-                        takenBlack.takenPieces[i].add(p);
-                        break;
-                    case BLACK:
-                        valid = 1;
-                        break;
-                    case EMPTY:
-                        valid = -1;
-                        points = 0;
-                        takenBlack.takenPieces[i].clear();
-                        break;
-                }
-            }
-            addPoints(points);
-        }
-        if(points > 0)
-        {*/
-            return true;
-        /*}
-        //TODO: CHECK VALIDITY
-        //TODO: CHECK IF BETTER TO CREATE A FUNCTION TO GENERATE ALL POSSIBLE MOVES??
-        return false;*/
-    }
-
-    //not in use
-    private location[] possibleMoveChart(int xPos, int yPos, int xDiffPos, int xDiffNeg, int yDiffPos, int yDiffNeg)
-    {
-        int count = 0;
-        location[] loc = new location[8];
-        for(int i = (yPos - Math.abs(yDiffNeg)); i < (yPos + Math.abs(yDiffPos)); i++)
-        {
-            for(int j = (xPos - Math.abs(xDiffNeg)); j < (xPos + Math.abs(xDiffPos)); j++)
-            {
-                if(j == (xPos) && i == (yPos))
-                {
-                    j++;
-                }
-                if(board[j][i] == boardSpace.WHITE)
-                {
-                    loc[count].x = j;
-                    loc[count].y = i;
-                    loc[count].dirX = (j - xPos);
-                    loc[count].dirY = (i - yPos);
-                    count++;
+                    OMoves[j][i].takenPieces[k] = new ArrayList<>();
+                    XMoves[j][i].takenPieces[k] = new ArrayList<>();
                 }
             }
         }
-        return loc;
     }
 
-    //not in use
-    private boolean checkWhite(int xPos, int yPos)
+    //receives coordinates, checks whether or not the move is valid by calling the checkMove function
+    //makes changes to the board if the move is valid
+    public int movePiece(int xPos, int yPos)
     {
+        if(!checkMove(xPos, yPos))
+        {
+            return -1;
+        }
+        //changes all pieces taken by the move made to the opposing player's
+        switch (turn)
+        {
+            case O:
+                board[xPos][yPos] = boardSpace.O;
+                for(int i = 0; i < 8; i++)
+                {
+                    for(int j = 0; j < OMoves[xPos][yPos].takenPieces[i].size(); j++)
+                    {
+                        if(OMoves[xPos][yPos].takenPieces[i].get(j).x < 0)
+                        {
+                            OMoves[xPos][yPos].takenPieces[i].get(j).x++;
+                        }
+                        if(OMoves[xPos][yPos].takenPieces[i].get(j).y < 0)
+                        {
+                            OMoves[xPos][yPos].takenPieces[i].get(j).y++;
+                        }
+                        board[OMoves[xPos][yPos].takenPieces[i].get(j).x][OMoves[xPos][yPos].takenPieces[i].get(j).y] = boardSpace.O;
+                    }
+                }
+                break;
+            case X:
+                board[xPos][yPos] = boardSpace.X;
+                for(int i = 0; i < 8; i++)
+                {
+                    for(int j = 0; j < XMoves[xPos][yPos].takenPieces[i].size(); j++)
+                    {
+                        if(XMoves[xPos][yPos].takenPieces[i].get(j).x < 0)
+                        {
+                            XMoves[xPos][yPos].takenPieces[i].get(j).x++;
+                        }
+                        if(XMoves[xPos][yPos].takenPieces[i].get(j).y < 0)
+                        {
+                            XMoves[xPos][yPos].takenPieces[i].get(j).y++;
+                        }
+                        board[XMoves[xPos][yPos].takenPieces[i].get(j).x][XMoves[xPos][yPos].takenPieces[i].get(j).y] = boardSpace.X;
+                    }
+                }
+                break;
+        }
+        return 0;
+    }
 
+    //checks that the inputted move is not out of bounds and that the space is empty
+    //also calls other functions to check if the move is valid
+    public boolean checkMove(int xPos, int yPos)
+    {
+        if(((0 > xPos) || (xPos > 7)) || ((0 > yPos) || (yPos > 7)))
+        {
+            return false;
+        }
+        if(board[xPos][yPos] != boardSpace.EMPTY)
+        {
+            return false;
+        }
+        switch (turn)
+        {
+            case O:
+                if(OMoves[xPos][yPos].valid) return true;
+                break;
+            case X:
+                if(XMoves[xPos][yPos].valid) return true;
+                break;
+        }
         return false;
     }
 
     //generates all moves and potential taken pieces such that they are not out of bounds
-    public boolean findValidMoves()
+    //and then passes them to the checkLocation function to see if they are legal moves
+    public boolean findValidMoves(playerColor turn)
     {
         for(int i = 0; i < 8; i++)
         {
             for(int j = 0; j < 8; j++)
             {
-                int xDiffPos = 0;
-                int xDiffNeg = 0;
-                int yDiffPos = 0;
-                int yDiffNeg = 0;
+                int[] dir = {0, 0, 0, 0};
                 if(i == 0)
                 {
-                    yDiffPos = 1;
+                    //y diff pos
+                    dir[2] = 1;
                 }
                 else if(i == 7)
                 {
-                    yDiffNeg = -1;
+                    //y diff neg
+                    dir[3] = -1;
                 }
                 else
                 {
-                    yDiffPos = 1;
-                    yDiffNeg = -1;
+                    //y diff pos
+                    dir[2] = 1;
+                    //y diff neg
+                    dir[3] = -1;
                 }
                 if(j == 0)
                 {
-                    xDiffPos = 1;
+                    //x diff pos
+                    dir[0] = 1;
                 }
                 else if(j == 7)
                 {
-                    xDiffNeg = -1;
+                    //x diff neg
+                    dir[1] = -1;
                 }
                 else
                 {
-                    xDiffPos = 1;
-                    xDiffNeg = -1;
+                    //x diff pos
+                    dir[0] = 1;
+                    //x diff neg
+                    dir[1] = -1;
                 }
-                generatePossibilities(j, i, xDiffPos, xDiffNeg, yDiffPos, yDiffNeg, turn);
+                if(turn == playerColor.O && board[j][i] == boardSpace.EMPTY)
+                {
+                    OMoves[j][i] = checkLocation(j, i, dir, turn, board);
+                }
+                else if(turn == playerColor.X && board[j][i] == boardSpace.EMPTY)
+                {
+                    XMoves[j][i] = checkLocation(j, i, dir, turn, board);
+                }
             }
         }
         return false;
     }
 
-    //takes a point and generates all possible taken pieces such that they do not go out of bounds
-    public void generatePossibilities(int xPos, int yPos, int xDiffPos, int xDiffNeg, int yDiffPos, int yDiffNeg, playerColor turnTemp)
+    //checks whether or not a given move is valid for a given player and generates all the pieces that would be flipped if that move were played
+    private potentialMove checkLocation(int xPos, int yPos, int[] dir, playerColor turnTemp, boardSpace[][] tempBoard)
     {
-        location[] loc = new location[8];
-        for(int i = 0; i < 8; i++)
+        potentialMove p = new potentialMove();
+        p.location.x = xPos;
+        p.location.y = yPos;
+        p.valid = false;
+        p = initTakenPieces(p);
+
+        int tempCount = 0;
+        for(int i = 0; i < dir.length; i++)
         {
-            loc[i] = new location();
-            loc[i].x = -2;
-        }
-        System.out.print("(" + xPos + ", " + yPos + "): ");
-        int yDir = 0;
-        int xDir = 0;
-        int count = 0;
-        for(int i = (yPos + yDiffNeg); i < (yPos + yDiffPos + 1); i++) {
-            if(i == yPos - 1)
+            if(dir[i] != 0)
             {
-                yDir = -1;
+                tempCount++;
             }
-            else if(i == yPos + 1)
+        }
+        if(tempCount == 0)
+        {
+            p.valid = false;
+            return p;
+        }
+
+        boardSpace playing;
+        boardSpace opponent;
+
+        if(turnTemp == playerColor.O)
+        {
+            playing = boardSpace.O;
+            opponent = boardSpace.X;
+        }
+        else
+        {
+            playing = boardSpace.X;
+            opponent = boardSpace.O;
+        }
+
+        int xDir;
+        int yDir;
+        int count = 0;
+        boardSpace currentSpace;
+        for(int i = yPos + dir[3]; i <= yPos + dir[2]; i++)
+        {
+            if(i == yPos + 1)
             {
                 yDir = 1;
+            }
+            else if(i == yPos - 1)
+            {
+                yDir = -1;
             }
             else
             {
                 yDir = 0;
             }
-            for (int j = (xPos + xDiffNeg); j < (xPos + xDiffPos + 1); j++) {
-                if ((j != xPos) || (i != yPos)) {
-                    System.out.print(j + ", " + i + " | ");
-                    if(j == xPos - 1)
-                    {
-                        xDir = -1;
-                    }
-                    else if(j == xPos + 1)
+            for(int j = xPos + dir[1]; j <= xPos + dir[0]; j++)
+            {
+                if(j != xPos || i != yPos)
+                {
+                    if(j == xPos + 1)
                     {
                         xDir = 1;
+                    }
+                    else if(j == xPos - 1)
+                    {
+                        xDir = -1;
                     }
                     else
                     {
                         xDir = 0;
                     }
-                    loc[count].x = j;
-                    loc[count].y = i;
-                    loc[count].dirX = xDir;
-                    loc[count].dirY = yDir;
+                    currentSpace = tempBoard[j][i];
+                    int tempX = j;
+                    int tempY = i;
+                    boolean valid = false;
+                    while(currentSpace == opponent && tempX > -1 && tempX < 8 && tempY > -1 && tempY < 8)
+                    {
+                        if(tempX + xDir > -1 && tempX + xDir < 8 && tempY + yDir > -1 && tempY + yDir < 8)
+                        {
+                            if(currentSpace == opponent && tempBoard[tempX + xDir][tempY + yDir] == playing)
+                            {
+                                valid = true;
+                            }
+                            currentSpace = tempBoard[tempX + xDir][tempY + yDir];
+                        }
+                        Point tempPoint = new Point();
+                        tempPoint.x = tempX;
+                        tempPoint.y = tempY;
+                        p.takenPieces[count].add(tempPoint);
+                        tempX += xDir;
+                        tempY += yDir;
+                    }
+                    if(!valid)
+                    {
+                            p.takenPieces[count].clear();
+                    }
+                    else
+                    {
+                        p.valid = true;
+                    }
                     count++;
                 }
-
             }
         }
-        System.out.println();
-        System.out.println();
-        System.out.println("(" + xPos + ", " + yPos + "): ");
-        for(int i = 0; i < loc.length; i++)
+        return p;
+    }
+
+    //initializes each arrayList inside the potentialMove object
+    private potentialMove initTakenPieces(potentialMove p)
+    {
+        for(int i = 0; i < p.takenPieces.length; i++)
         {
-            if(loc[i].x > -2)
+            p.takenPieces[i] = new ArrayList<>();
+        }
+        return p;
+    }
+
+    //calculates the number of points with the current board state given a player color to check for
+    public int getPoints(playerColor turn)
+    {
+        boardSpace counting = boardSpace.EMPTY;
+        switch(turn)
+        {
+            case X:
+                counting = boardSpace.X;
+                break;
+            case O:
+                counting = boardSpace.O;
+                break;
+        }
+        int points = 0;
+        for(int i = 0; i < 8; i++)
+        {
+            for(int j = 0; j < 8; j++)
             {
-                System.out.print(loc[i].x + ", " + loc[i].y +" ");
-                System.out.print("dir X: " + loc[i].dirX + ", " + "dir y: " + loc[i].dirY);
-                System.out.println();
+                if(board[j][i] == counting)
+                {
+                    points++;
+                }
             }
         }
-        System.out.println();
+        return points;
     }
 
-    private boolean checkLoc(location loc)
+    //returns the state of a specific space on the board
+    public boardSpace getState(int x, int y)
     {
-
-        //TODO: CHECKS TO SEE IF THE POTENTIAL TAKEN PIECE CHAINS COMPLY WITH GAME RULES
-        return false;
-    }
-
-    private void addPoints(int points)
-    {
-        pointsTotalBlack += points;
-    }
-
-    public int getPoints(playerColor p)
-    {
-        if(p == playerColor.BLACK)
-        {
-            return pointsTotalBlack;
-        }
-        else
-        {
-            return pointsTotalWhite;
-        }
+        return board[x][y];
     }
 }
 
-//object used to create a record of potential taken pieces when checking for move validity
-class location {
-    int x;
-    int y;
-    int dirX;
-    int dirY;
+//object to create an array of legal moves
+class potentialMove extends othelloBoard
+{
+    Point location = new Point();
+    boolean valid;
+    ArrayList<Point>[] takenPieces = new ArrayList[8];
 }
